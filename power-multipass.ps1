@@ -10,36 +10,34 @@ param(
 				ParameterSetName='Name',
 				Position=1 )]
 	[Alias('pipeline-dir')]
-	[string]$pipelineDir,
+	[string]$PipelineDir,
 	
 	[Parameter( Mandatory=$false )]
 	[Alias('cloud-init')]
-	[string]$cloudInit,
+	[string]$CloudInit,
 	
-	[Parameter( Mandatory=$false,
-                HelpMessage="Write to error log file or not." )]
+	[Parameter( Mandatory=$false )]
 	[Alias('skip-sh')]
-	[switch]$skip_sh,
+	[switch]$SkipSh,
 	
-	[Parameter( Mandatory=$false,
-                HelpMessage="Write to error log file or not." )]
-	[Alias('no-create', 'skip-creation')]
-	[switch]$skip_creation
+	[Parameter( Mandatory=$false )]
+	[Alias('no-create')]
+	[switch]$NoCreate
 )
 
 $stopwatch = [system.diagnostics.stopwatch]::StartNew();
 
-if ($skip_creation -eq $false) {
+if ($NoCreate -eq $false) {
 	echo "Deleting $Name";
 	multipass delete $Name;
 	multipass purge;
 
 	echo "Launching $Name";
-	if ($cloudInit -eq "") {
+	if ($CloudInit -eq "") {
 		multipass launch -n $Name;
 	}
 	else {
-		multipass launch -n $Name --cloud-init $cloudInit;
+		multipass launch -n $Name --cloud-init $CloudInit;
 	}
 }
 
@@ -50,14 +48,14 @@ while (-not((multipass exec $Name -- hostname) -eq $Name)) {
 }
 echo "";
 
-if (-not ($pipelineDir -eq "")) {
+if (-not ($PipelineDir -eq "")) {
 	echo "Moving files to $Name";
-	$dir = (Get-ItemProperty($pipelineDir));
+	$dir = (Get-ItemProperty($PipelineDir));
 	$scripts = New-Object Collections.Generic.List[string];
 
 	multipass exec $Name -- mkdir pipeline;
 	foreach($file in (Get-ChildItem($dir.FullName) -Recurse | sort FullName)) {
-		$path = $file.FullName -replace [regex]::Escape("$($dir.FullName)\"), "";
+		$path = $file.FullName -replace [regex]::Escape("$($dir.FullName)"), "";
 		$path = $path -replace [regex]::Escape("\"), "/";
 		
 		Write-Host " - $path" -NoNewline;
@@ -83,19 +81,28 @@ if (-not ($pipelineDir -eq "")) {
 	}
 	echo "";
 
-	if ($skip_sh -eq $false) {
+	if ($SkipSh -eq $false) {
 		foreach ($script in $scripts) {
 			echo "Running script '$script' ...";
-			multipass exec $Name -- $script;
+			multipass exec $Name -- "$script";
 			echo "";
 		}
 	}
 }
 
+# --- Get machine IP and update in hosts file ---
+echo "Machine address:";
+$regex = multipass info $Name | select-string -pattern '(?<Property>\b[\w .-]+):\s+(?<Value>.+)';
+$ipv4match = $regex.Matches | Where-Object { ($_.Groups['Property'].Value -eq 'IPv4') };
+$ipv4 = $ipv4match.Groups['Value'].Value;
+echo $ipv4;
+
 echo "Updating host file...";
-./update-hosts $Name;
+# Connect to VM and take /etc/hosts file content.
+(multipass exec $Name -- cat /etc/hosts) | ./update-hosts -IPAddress $ipv4 -IPFilter '127.0.1.1';
 echo "";
 
+# --- Print machine info ---
 echo "Machine info:";
 multipass info $Name;
 echo "";

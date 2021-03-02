@@ -1,7 +1,10 @@
-#!/bin/sh
+#/bin/sh
 
-# Create react-app
+# Create repos folder.
+[[ ! -d ~/repos ]] && mkdir ~/repos
 cd ~/repos
+
+# Clone repository
 git clone https://github.com/examples-hfrances/hello-react.git
 
 # Install packages

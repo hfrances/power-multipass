@@ -1,5 +1,7 @@
 # Getting Started with Power-Multipass
 
+Get ready your Ubuntu VM with dotnet based api and react front in 6 minutes.
+
 ## Install Multipass
 https://multipass.run/
 
