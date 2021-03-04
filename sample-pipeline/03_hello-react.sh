@@ -53,3 +53,4 @@ ps -ef | grep nginx
 sleep 2
 # Check that service is working
 pwsh -command "echo ((Invoke-WebRequest 'http://hello-react.example.com' -Method Get -DisableKeepAlive) | select-string -pattern '<title>([\w\s]+)<\/title>' -AllMatches).Matches.Groups[1].Value"
+

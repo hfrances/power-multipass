@@ -13,3 +13,4 @@ dotnet publish HelloWorld -c Release -o publish/HelloWorld
 
 # Run projects
 dotnet publish/HelloWorld/HelloWorld.dll run
+
