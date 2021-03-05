@@ -17,18 +17,22 @@ packages:
 
 snap:
   commands: 
-#    - snap install dotnet-sdk --classic
-#    - snap install dotnet-runtime-31
-     - snap install powershell --classic
+    - echo $(whoami) $(lsb_release --release --short) > /root/commands.txt
+    - wget "https://packages.microsoft.com/config/ubuntu/$(lsb_release --release --short)/packages-microsoft-prod.deb" -O /tmp/packages-microsoft-prod.deb
+    - dpkg -i /tmp/packages-microsoft-prod.deb
+    - apt-get update
+    - apt-get install -y dotnet-sdk-5.0 aspnetcore-runtime-5.0 aspnetcore-runtime-3.1
+    - snap install powershell --classic
 
 # Cuidado, solo puede haber un bootcmd por fichero.
 bootcmd:
   - echo $(whoami) $(lsb_release --release --short) > /root/boot.txt
-  - sudo wget "https://packages.microsoft.com/config/ubuntu/$(lsb_release --release --short)/packages-microsoft-prod.deb" -O /tmp/packages-microsoft-prod.deb
-  - sudo dpkg -i /tmp/packages-microsoft-prod.deb
-  - [ sudo, apt-get, update ]
-  - [ sudo, apt-get, install, -y, dotnet-sdk-5.0 ]
-  - [ sudo, apt-get, install, -y, aspnetcore-runtime-5.0, aspnetcore-runtime-3.1 ] 
+
+# Cuidado, solo puede haber un runcmd por fichero.  
+runcmd:
+  - echo $(whoami) $(lsb_release --release --short) > /root/run.txt
 
 package_update: true
 package_upgrade: true
+
+output: { all: "| tee -a /var/log/cloud-init-output.log" }

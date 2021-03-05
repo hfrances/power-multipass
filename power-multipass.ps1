@@ -69,10 +69,11 @@ if (-not ($PipelineDir -eq "")) {
 			if ($isScript) {
 				Write-Host " " -NoNewline;
 				Write-Host " Script " -ForegroundColor White -BackgroundColor DarkGreen -NoNewline;
+				./set-eol unix -file "$($file.FullName)"
 			}
 			Write-Host "";
 			
-			multipass transfer $($file.FullName) "$($Name):pipeline/$path";
+			multipass transfer "$($file.FullName)" "$($Name):pipeline/$path";
 			if ($isScript) {
 				multipass exec $Name -- chmod ug+x "pipeline/$path";
 				$scripts.Add("pipeline/$path");
