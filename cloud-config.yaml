@@ -6,7 +6,7 @@ users:
     ssh_import_id: None
     sudo: ALL=(ALL) NOPASSWD:ALL
     ssh_authorized_keys:
-      - ssh-rsa xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx = someuser@foo
+      - ssh-rsa [...] = someuser@foo
 
 packages:
   - apt-transport-https

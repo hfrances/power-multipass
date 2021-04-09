@@ -1,0 +1,51 @@
+
+users:
+  - default
+  - name: myuser
+    shell: /bin/bash
+    ssh_import_id: None
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    ssh_authorized_keys:
+      - ssh-rsa [...] myuser@domain.loc
+
+packages:
+  - apt-transport-https
+  - snapd
+  - nginx
+
+snap:
+  commands: 
+#    - snap install dotnet-sdk --classic
+#    - snap install dotnet-runtime-31
+     - snap install powershell --classic
+
+# Cuidado, solo puede haber un bootcmd por fichero.
+bootcmd:
+  - echo $(whoami) $(lsb_release --release --short) > /root/boot.txt
+  - sudo wget "https://packages.microsoft.com/config/ubuntu/$(lsb_release --release --short)/packages-microsoft-prod.deb" -O /tmp/packages-microsoft-prod.deb
+  - sudo dpkg -i /tmp/packages-microsoft-prod.deb
+  - [ sudo, apt-get, update ]
+  - [ sudo, apt-get, install, -y, dotnet-sdk-5.0 ]
+  - [ sudo, apt-get, install, -y, aspnetcore-runtime-5.0, aspnetcore-runtime-3.1 ] 
+
+package_update: true
+package_upgrade: true
+
+write_files:
+  - path: /etc/ssh/github
+    content: |
+      -----BEGIN OPENSSH PRIVATE KEY-----
+      [...]
+      -----END OPENSSH PRIVATE KEY-----
+  - path: /etc/ssh/github.pub
+    content: |
+      ssh-rsa [...] ubuntu@bar
+  - path: /etc/ssh/ssh_config
+    append: true
+    content: |
+      Host github.com
+        HostName github.com
+        User git
+        IdentityFile /etc/ssh/github
+        PreferredAuthentications publickey
+
