@@ -19,4 +19,5 @@ jobs:
         displayName: 'NuGet push'
         inputs:
           command: push
+          nuGetFeedType: 'external'
           publishVstsFeed: 'nuget.org'
