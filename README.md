@@ -10,7 +10,7 @@ https://multipass.run/
 In the project directory, you can run:
 
 ```powershell
-PS > .\power-multipass.ps1 [name] -pipeline-dir [pipeline] -cloud-init [yaml-file]
+PS > New-PSInstance [name] -pipeline-dir [pipeline] -cloud-init [yaml-file]
 ```
 **Script steps:**
 
@@ -27,5 +27,5 @@ Updates hosts files taking information from the machine hosts (***only for windo
 
 **Example:**
 ```powershell
-PS > .\power-multipass.ps1 'foo' -pipeline-dir 'sample-pipeline' -cloud-init 'cloud-config.yaml'
+PS > New-PSInstance 'foo' -pipeline-dir 'sample-pipeline' -cloud-init 'cloud-config.yaml'
 ```
