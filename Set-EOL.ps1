@@ -12,35 +12,38 @@
 
 #     example:
 #     ./set-eol dos "c:\demo\data.txt"
+function Set-EOL {
 
-[CmdletBinding()]
-Param(
-  [Parameter(Mandatory=$True,Position=1)]
-    [ValidateSet("mac","unix","dos")] 
+  [CmdletBinding()]
+  Param(
+    [Parameter(Mandatory, Position = 1)]
+    [ValidateSet("mac", "unix", "dos")] 
     [string]$lineEnding,
-  [Parameter(Mandatory=$True)]
+
+    [Parameter(Mandatory)]
     [string]$file
-)
+  )
 
-# Convert the friendly name into a PowerShell EOL character
-Switch ($lineEnding) {
-  "mac"  { $eol="`r" }
-  "unix" { $eol="`n" }
-  "dos"  { $eol="`r`n" }
-} 
+  # Convert the friendly name into a PowerShell EOL character
+  Switch ($lineEnding) {
+    "mac" { $eol = "`r" }
+    "unix" { $eol = "`n" }
+    "dos" { $eol = "`r`n" }
+  } 
 
-# Replace CR+LF with LF
-$text = [IO.File]::ReadAllText($file) -replace "`r`n", "`n"
-[IO.File]::WriteAllText($file, $text)
-
-# Replace CR with LF
-$text = [IO.File]::ReadAllText($file) -replace "`r", "`n"
-[IO.File]::WriteAllText($file, $text)
-
-# At this point all line-endings should be LF.
-
-# Replace LF with intended EOL char
-if ($eol -ne "`n") {
-  $text = [IO.File]::ReadAllText($file) -replace "`n", $eol
+  # Replace CR+LF with LF
+  $text = [IO.File]::ReadAllText($file) -replace "`r`n", "`n"
   [IO.File]::WriteAllText($file, $text)
+
+  # Replace CR with LF
+  $text = [IO.File]::ReadAllText($file) -replace "`r", "`n"
+  [IO.File]::WriteAllText($file, $text)
+
+  # At this point all line-endings should be LF.
+
+  # Replace LF with intended EOL char
+  if ($eol -ne "`n") {
+    $text = [IO.File]::ReadAllText($file) -replace "`n", $eol
+    [IO.File]::WriteAllText($file, $text)
+  }
 }

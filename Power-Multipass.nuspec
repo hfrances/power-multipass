@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Power-Multipass</id>
+    <version>0.1.0</version>
+    <authors>hfrances</authors>
+    <owners>TrCode</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Get ready your Ubuntu VM with dotnet based api and react front in 6 minutes.</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2021</copyright>
+    <tags>PSModule</tags>
+  </metadata>
+  <files>
+    <file src="Power-Multipass.psd1" target="" />
+    <file src="Power-Multipass.psm1" target="" />
+    <file src="*.ps1" target="" />
+  </files>
+</package>

@@ -1,0 +1,22 @@
+trigger:
+  - master
+  - main
+  - staging
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+jobs:
+  - job: Build
+    steps:
+      - task: NuGetCommand@2
+        displayName: 'NuGet pack'
+        inputs:
+          command: pack
+          packagesToPack: '*.nuspec'
+      
+      - task: NuGetCommand@2
+        displayName: 'NuGet push'
+        inputs:
+          command: push
+          publishVstsFeed: 'nuget.org'
