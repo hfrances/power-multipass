@@ -44,10 +44,11 @@ sudo systemctl daemon-reload
 sudo systemctl enable helloWebApplication.dotnetapi.service
 # Start service
 sudo systemctl start helloWebApplication.dotnetapi.service
+# Wait some seconds
+echo "Waiting..."
+sleep 20
 # Get service status
 sudo systemctl status helloWebApplication.dotnetapi.service --no-pager
-# Wait some seconds
-sleep 2
 # Check that service is working
 pwsh -command Invoke-WebRequest 'http://localhost:5100'
 echo "Error number: $?"
