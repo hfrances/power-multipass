@@ -18,6 +18,7 @@ jobs:
       - task: NuGetCommand@2
         displayName: 'NuGet push'
         inputs:
-          command: push
+          command: 'push'
+          packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
           nuGetFeedType: 'external'
-          publishVstsFeed: 'nuget.org'
+          publishFeedCredentials: 'nuget.org'
