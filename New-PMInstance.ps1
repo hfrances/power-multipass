@@ -69,8 +69,9 @@ function New-PMInstance {
       else {
         $isScript = ($file.Extension -eq '.sh');
         if ($isScript) {
-          Write-Host " " -NoNewline;
+          Write-Host " |" -NoNewline;
           Write-Host " Script " -ForegroundColor White -BackgroundColor DarkGreen -NoNewline;
+          Write-Host "|" -NoNewline;
           Set-EOL unix -file "$($file.FullName)"
         }
         Write-Host "";

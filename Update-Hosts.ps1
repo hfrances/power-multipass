@@ -96,7 +96,7 @@ function Update-Hosts {
             $lastFoundIndex = $lines.Count - 1;
             
             Write-Host "$hostName $address " -NoNewline;
-            
+            Write-Host "|" -NoNewline;
             if ($address -eq $IPAddress) {
               Write-Host " unmodified " -ForegroundColor Black -BackgroundColor White -NoNewline;
             }
@@ -113,6 +113,8 @@ function Update-Hosts {
               # Si la línea se queda sin $hostNames, no se insertará.
               $matchCount--;
             }
+            Write-Host "|" -NoNewline;
+            
             # Marcar el host como añadido.
             $includedHosts.Add($foundHost);
               
@@ -136,7 +138,9 @@ function Update-Hosts {
     # Añadir al final del fichero aquellos elementos en $hosts que no estén en $includedHosts.
     foreach ($hostName in $hosts.Keys | Where-Object { (-not ($includedHosts -contains $_)) }) {
       Write-Host "$hostName " -NoNewline;
+      Write-Host "|" -NoNewline;
       Write-Host " added " -ForegroundColor White -BackgroundColor DarkYellow -NoNewline;
+      Write-Host "|" -NoNewline;
       
       if ($lastFoundIndex -eq -1) {
         $lines.Add("$IPAddress $hostName");
