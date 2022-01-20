@@ -5,12 +5,42 @@ Get ready your Ubuntu VM with dotnet based api and react front in 6 minutes.
 ## Install Multipass
 https://multipass.run/
 
+## Install module
+
+- Open an **elevated PowerShell** prompt window.
+
+- Run the following command to add nuget.org feed:
+
+```powershell
+Register-PSRepository -Name "NuGet" -SourceLocation "https://api.nuget.org/v3/index.json";
+```
+***Warning: In some versions of PowerShell, you must start a new session after you run the Register-PSRepository cmdlet to avoid the Unable to resolve package source warning.***
+
+- To confirm that the repository was registered successfully run the Get-PSRepository cmdlet. This command gets all module repositories registered for the current user:
+```powershell
+Get-PSRepository
+```
+
+- Find modules in our repository:
+```powershell
+Find-Module -Name "Power-Multipass" -Repository "NuGet"
+```
+
+- To install it, run the following command:
+```powershell
+Install-Module -Name "Power-Multipass" -Repository "NuGet"
+```
+
+- You can check for your module by running the following command:
+```powershell
+Get-Module -ListAvailable "Power-Multipass"
+```
 ## Available Scripts
 
 In the project directory, you can run:
 
 ```powershell
-PS > New-PSInstance [name] -pipeline-dir [pipeline] -cloud-init [yaml-file]
+New-PSInstance [name] -pipeline-dir [pipeline] -cloud-init [yaml-file]
 ```
 **Script steps:**
 
@@ -27,5 +57,5 @@ Updates hosts files taking information from the machine hosts (***only for windo
 
 **Example:**
 ```powershell
-PS > New-PSInstance 'foo' -pipeline-dir 'sample-pipeline' -cloud-init 'cloud-config.yaml'
+New-PSInstance 'foo' -pipeline-dir 'sample-pipeline' -cloud-init 'cloud-config.yaml'
 ```
