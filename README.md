@@ -57,5 +57,5 @@ Updates hosts files taking information from the machine hosts (***only for windo
 
 **Example:**
 ```powershell
-New-PSInstance 'foo' -pipeline-dir 'sample-pipeline' -cloud-init 'cloud-config.yaml'
+New-PMInstance 'foo' -pipeline-dir '.\sample-pipeline\' -cloud-init '.\cloud-config.yaml' -network "name='External Switch',mac='58:54:A0:59:37:8F'" -memory 4G -cpus 2
 ```
