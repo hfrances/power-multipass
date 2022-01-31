@@ -1,7 +1,11 @@
 function New-PMInstance {
 
-  [CmdletBinding(DefaultParameterSetName = 'Name')]
+  [CmdletBinding(DefaultParametersetName = 'Help')]
   param(
+
+    [Parameter( ParameterSetName = 'Help' )]
+    [switch]$Help,
+
     [Parameter( Mandatory, 
       ParameterSetName = 'Name', 
       Position = 0 )]
@@ -17,6 +21,15 @@ function New-PMInstance {
     [Parameter( Mandatory = $false )]
     [Alias('cloud-init')]
     [string]$CloudInit,
+
+    [Parameter( Mandatory = $false )]
+    [string]$Memory,
+
+    [Parameter( Mandatory = $false )]
+    [string]$Cpus,
+
+    [Parameter( Mandatory = $false )]
+    [string]$Network,
 	
     [Parameter( Mandatory = $false )]
     [Alias('skip-sh')]
@@ -27,95 +40,120 @@ function New-PMInstance {
     [switch]$NoCreate
   )
 
-  $stopwatch = [system.diagnostics.stopwatch]::StartNew();
-
-  if ($NoCreate -eq $false) {
-    Write-Host "Deleting $Name";
-    multipass delete $Name;
-    multipass purge;
-
-    Write-Host "Launching $Name";
-    if ($CloudInit -eq "") {
-      multipass launch -n $Name;
-    }
-    else {
-      multipass launch -n $Name --cloud-init $CloudInit;
-    }
+  if ($PsCmdlet.ParameterSetName -eq "Help") {
+    Write-Host;
+    Write-Host "New-PMInstance name [-PipelineDir <string>] [-CloudInit <string>] [-Network <string>] [-Mem <string>] [-Cpus <number>]";
+    Write-Host;
+    Write-Host "  -PipelineDir <string>   Path to the directory to copy to the instance after finish to start.";
+    Write-Host "                          Files with extension ""*.pipeline.sh"" are executed after finish copy.";
+    Write-Host "  -CloudInit <string>     Path to a user-data cloud-init configuration.";
+    Write-Host "  -Network <string>       Add a network interface to the instance, where <string> is in the ""key=value,key=value"" format, with the following.";
+    Write-Host "                          name: the network to connect to (required). Use the ""multipass networks"" command for a list of possible values.";
+    Write-Host "                          mode: auto|manual (default: auto).";
+    Write-Host "                          mac: hardware address (default: random).";
+    Write-Host "  -Memory <string>        Amount of memory to allocate. Positive integers, in bytes, or with K, M, G suffix.";
+    Write-Host "  -Cpus <number>          Number of CPUs to allocate.";
+    Write-Host;
   }
+  else {
+    $stopwatch = [system.diagnostics.stopwatch]::StartNew();
 
-  # Check that instance is ready (sometimes returns timeout).
-  while (-not((multipass exec $Name -- hostname) -eq $Name)) {
-    Write-Host "Waiting a while for multipass...";
-    Start-Sleep -Seconds 15;
-  }
-  Write-Host "";
+    if ($NoCreate -eq $false) {
+      Write-Host "Deleting $Name";
+      multipass delete $Name;
+      multipass purge;
 
-  if (-not ($PipelineDir -eq "")) {
-    Write-Host "Moving files to $Name";
-    $dir = (Get-ItemProperty($PipelineDir));
-    $scripts = New-Object Collections.Generic.List[string];
-
-    multipass exec $Name -- mkdir pipeline;
-    foreach ($file in (Get-ChildItem($dir.FullName) -Recurse | Sort-Object FullName)) {
-      $path = $file.FullName -replace [regex]::Escape("$($dir.FullName)"), "";
-      $path = $path -replace [regex]::Escape("\"), "/";
-		
-      Write-Host " - $path" -NoNewline;
-      if ($file.PSIsContainer) {
-        Write-Host "";
-			
-        multipass exec $Name -- mkdir pipeline/$path;
+      Write-Host "Launching $Name";
+      $arguments = New-Object Collections.Generic.List[string];
+      if ($CloudInit -ne "") {
+        $arguments.Add("--cloud-init $CloudInit");
       }
-      else {
-        $isScript = ($file.Extension -eq '.sh');
-        if ($isScript) {
-          Write-Host " |" -NoNewline;
-          Write-Host " Script " -ForegroundColor White -BackgroundColor DarkGreen -NoNewline;
-          Write-Host "|" -NoNewline;
-          Set-EOL unix -file "$($file.FullName)"
-        }
-        Write-Host "";
-			
-        multipass transfer "$($file.FullName)" "$($Name):pipeline/$path";
-        if ($isScript) {
-          multipass exec $Name -- chmod ug+x "pipeline/$path";
-          $scripts.Add("pipeline/$path");
-        }
+      if ($Memory -ne "") {
+        $arguments.Add("--mem $Memory");
       }
+      if ($Cpus -ne "") {
+        $arguments.Add("--cpus $Cpus");
+      }
+      if ($Network -ne "") {
+        $arguments.Add("--network $Network");
+      }
+      Invoke-Expression "multipass launch --name $Name $arguments";
+    }
+
+    # Check that instance is ready (sometimes returns timeout).
+    while (-not((multipass exec $Name -- hostname) -eq $Name)) {
+      Write-Host "Waiting a while for multipass...";
+      Start-Sleep -Seconds 15;
     }
     Write-Host "";
 
-    if ($SkipSh -eq $false) {
-      foreach ($script in $scripts) {
-        Write-Host "Running script '$script' ...";
-        multipass exec $Name -- "$script";
-        Write-Host "";
+    if (-not ($PipelineDir -eq "")) {
+      Write-Host "Moving files to $Name";
+      $dir = (Get-ItemProperty($PipelineDir));
+      $scripts = New-Object Collections.Generic.List[string];
+
+      multipass exec $Name -- mkdir pipeline;
+      foreach ($file in (Get-ChildItem($dir.FullName) -Recurse | Sort-Object FullName)) {
+        $path = $file.FullName -replace [regex]::Escape("$($dir.FullName)"), "";
+        $path = $path -replace [regex]::Escape("\"), "/";
+      
+        Write-Host " - $path" -NoNewline;
+        if ($file.PSIsContainer) {
+          Write-Host "";
+        
+          multipass exec $Name -- mkdir pipeline/$path;
+        }
+        else {
+          $isScript = ($file.Extension -eq '.sh');
+          if ($isScript) {
+            Write-Host " |" -NoNewline;
+            Write-Host " Script " -ForegroundColor White -BackgroundColor DarkGreen -NoNewline;
+            Write-Host "|" -NoNewline;
+            Set-EOL unix -file "$($file.FullName)"
+          }
+          Write-Host "";
+        
+          multipass transfer "$($file.FullName)" "$($Name):pipeline/$path";
+          if ($isScript) {
+            multipass exec $Name -- chmod ug+x "pipeline/$path";
+            $scripts.Add("pipeline/$path");
+          }
+        }
+      }
+      Write-Host "";
+
+      if ($SkipSh -eq $false) {
+        foreach ($script in $scripts) {
+          Write-Host "Running script '$script' ...";
+          multipass exec $Name -- "$script";
+          Write-Host "";
+        }
       }
     }
+
+    # --- Get machine IP and update in hosts file ---
+    Write-Host "Machine address:";
+    $regex = multipass info $Name | select-string -pattern '(?<Property>\b[\w .-]+):\s+(?<Value>.+)';
+    $ipv4match = $regex.Matches | Where-Object { ($_.Groups['Property'].Value -eq 'IPv4') };
+    $ipv4 = $ipv4match.Groups['Value'].Value;
+    Write-Host $ipv4;
+
+    Write-Host "Updating host file...";
+    # Connect to VM and take /etc/hosts file content.
+    (multipass exec $Name -- cat /etc/hosts) | Update-Hosts -IPAddress $ipv4 -IPFilter '127.0.1.1';
+    Write-Host "";
+
+    # --- Print machine info ---
+    Write-Host "Machine info:";
+    multipass info $Name;
+    Write-Host "";
+
+    $stopwatch.Stop();
+    Write-Host "Done.";
+    Write-Host "Elapsed time: $($stopwatch.Elapsed)";
+    Write-Host "";
+
+    multipass exec $Name -- /bin/bash;
   }
-
-  # --- Get machine IP and update in hosts file ---
-  Write-Host "Machine address:";
-  $regex = multipass info $Name | select-string -pattern '(?<Property>\b[\w .-]+):\s+(?<Value>.+)';
-  $ipv4match = $regex.Matches | Where-Object { ($_.Groups['Property'].Value -eq 'IPv4') };
-  $ipv4 = $ipv4match.Groups['Value'].Value;
-  Write-Host $ipv4;
-
-  Write-Host "Updating host file...";
-  # Connect to VM and take /etc/hosts file content.
-  (multipass exec $Name -- cat /etc/hosts) | Update-Hosts -IPAddress $ipv4 -IPFilter '127.0.1.1';
-  Write-Host "";
-
-  # --- Print machine info ---
-  Write-Host "Machine info:";
-  multipass info $Name;
-  Write-Host "";
-
-  $stopwatch.Stop();
-  Write-Host "Done.";
-  Write-Host "Elapsed time: $($stopwatch.Elapsed)";
-  Write-Host "";
-
-  multipass exec $Name -- /bin/bash;
 }
 Export-ModuleMember -Function New-PMInstance;
