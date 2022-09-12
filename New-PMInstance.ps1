@@ -32,12 +32,16 @@ function New-PMInstance {
     [string]$Network,
 	
     [Parameter( Mandatory = $false )]
+    [Alias('no-create')]
+    [switch]$NoCreate,
+
+    [Parameter( Mandatory = $false )]
     [Alias('skip-sh')]
     [switch]$SkipSh,
-	
+
     [Parameter( Mandatory = $false )]
-    [Alias('no-create')]
-    [switch]$NoCreate
+    [Alias('no-bash')]
+    [switch]$NoBash
   )
 
   if ($PsCmdlet.ParameterSetName -eq "Help") {
@@ -53,6 +57,9 @@ function New-PMInstance {
     Write-Host "                          mac: hardware address (default: random).";
     Write-Host "  -Memory <string>        Amount of memory to allocate. Positive integers, in bytes, or with K, M, G suffix.";
     Write-Host "  -Cpus <number>          Number of CPUs to allocate.";
+    Write-Host "  -NoCreate               Optional: do not remove an create the virtual machine.";
+    Write-Host "  -SkipSh                 Optional: do not run .sh scripts.";
+    Write-Host "  -NoBash                 Optional: when the process finish, it stays in powershell instead of enter in the virtual machine command line.";
     Write-Host;
   }
   else {
@@ -157,7 +164,9 @@ function New-PMInstance {
     Write-Host "Elapsed time: $($stopwatch.Elapsed)";
     Write-Host "";
 
-    multipass exec $Name -- /bin/bash;
+    if ($NoBash -eq $false) {
+      multipass exec $Name -- /bin/bash;
+    }
   }
 }
 Export-ModuleMember -Function New-PMInstance;
