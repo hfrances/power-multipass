@@ -59,9 +59,13 @@ function New-PMInstance {
     $stopwatch = [system.diagnostics.stopwatch]::StartNew();
 
     if ($NoCreate -eq $false) {
-      Write-Host "Deleting $Name";
-      multipass delete $Name;
-      multipass purge;
+      # Check if the instance exists.
+      $search = multipass info --all | Select-String -pattern "Name:\s+$Name" -CaseSensitive;
+      if ($null -ne $search) {
+        Write-Host "Deleting $Name";
+        multipass delete $Name;
+        multipass purge;
+      }
 
       Write-Host "Launching $Name";
       $arguments = New-Object Collections.Generic.List[string];
