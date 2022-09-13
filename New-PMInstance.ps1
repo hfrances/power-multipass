@@ -41,7 +41,10 @@ function New-PMInstance {
 
     [Parameter( Mandatory = $false )]
     [Alias('no-bash')]
-    [switch]$NoBash
+    [switch]$NoBash,
+
+    [Parameter( Mandatory = $false )]
+    [switch]$Force
   )
 
   if ($PsCmdlet.ParameterSetName -eq "Help") {
@@ -60,6 +63,7 @@ function New-PMInstance {
     Write-Host "  -NoCreate               Optional: do not remove an create the virtual machine.";
     Write-Host "  -SkipSh                 Optional: do not run .sh scripts.";
     Write-Host "  -NoBash                 Optional: when the process finish, it stays in powershell instead of enter in the virtual machine command line.";
+    Write-Host "  -Force                  Optional: replace all files from -PipelineDir in the remote even if they already exists and they are older.";
     Write-Host;
   }
   else {
@@ -99,35 +103,55 @@ function New-PMInstance {
     Write-Host "";
 
     if (-not ($PipelineDir -eq "")) {
+      $scripts = New-Object Collections.Generic.List[string];
+      $remoteFiles = New-Object Collections.Generic.List[PsObject];
+
+      # Get existing files in VM.
+      if ($NoCreate -eq $true -and $Force -eq $false) {
+        Write-Host "Retrieving files in the virtual machine...";
+        $remoteFiles = ((multipass exec CWA-LOCAL -- ls -laR --time-style='+%Y-%m-%d %H:%M:%S' pipeline) | Format-LsFiles);
+        Write-Host "$($remoteFiles.Count) files found.";
+      }
+
+      # Copy files.
       Write-Host "Moving files to $Name";
       $dir = (Get-ItemProperty($PipelineDir));
-      $scripts = New-Object Collections.Generic.List[string];
-
       multipass exec $Name -- mkdir pipeline;
       foreach ($file in (Get-ChildItem($dir.FullName) -Recurse | Sort-Object FullName)) {
         $path = $file.FullName -replace [regex]::Escape("$($dir.FullName)"), "";
         $path = $path -replace [regex]::Escape("\"), "/";
       
-        Write-Host " - $path" -NoNewline;
-        if ($file.PSIsContainer) {
-          Write-Host "";
-        
-          multipass exec $Name -- mkdir pipeline/$path;
+        if ($file.PSIsContainer) {          
+          $newFolder = $null;
+          if ($NoCreate -eq $true) {
+            $newFolder = $remoteFiles | Where-Object {$_.FileName -eq "pipeline/$path"};
+          }
+          if ($newFolder -eq $null) {
+            Write-Host " - $path" -NoNewline;
+            multipass exec $Name -- mkdir "pipeline/$path";
+            Write-Host "";
+          }
         }
         else {
-          $isScript = ($file.Extension -eq '.sh');
-          if ($isScript) {
-            Write-Host " |" -NoNewline;
-            Write-Host " Script " -ForegroundColor White -BackgroundColor DarkGreen -NoNewline;
-            Write-Host "|" -NoNewline;
-            Set-EOL unix -file "$($file.FullName)"
+          $newFile = $null;
+          if ($NoCreate -eq $true) {
+            $newFile = $remoteFiles | Where-Object {$_.FileName -eq "pipeline/$path" -and $_.Date -gt $file.LastWriteTime};
           }
-          Write-Host "";
-        
-          multipass transfer "$($file.FullName)" "$($Name):pipeline/$path";
-          if ($isScript) {
-            multipass exec $Name -- chmod ug+x "pipeline/$path";
-            $scripts.Add("pipeline/$path");
+          if ($newFile -eq $null) {
+            Write-Host " - $path" -NoNewline;
+            $isScript = ($file.Extension -eq '.sh');
+            if ($isScript) {
+              Write-Host " |" -NoNewline;
+              Write-Host " Script " -ForegroundColor White -BackgroundColor DarkGreen -NoNewline;
+              Write-Host "|" -NoNewline;
+              Set-EOL unix -file "$($file.FullName)"
+            }          
+            multipass transfer "$($file.FullName)" "$($Name):pipeline/$path";
+            if ($isScript) {
+              multipass exec $Name -- chmod ug+x "pipeline/$path";
+              $scripts.Add("pipeline/$path");
+            }
+            Write-Host "";
           }
         }
       }
