@@ -53,7 +53,7 @@ function Get-LsFiles {
   [OutputType([PsObject[]])]
   param([Parameter(Position=0)][string]$folder, [Parameter(Position=1)][string]$content)
 
-  # https://regex101.com/r/0YlNZz/3
+  # https://regex101.com/r/0YlNZz/4
   $linePattern = '(?ms)(?<type>[dpsl-])(?<permissions>[rwxt-]+)\.? +(?<hardLinks>\d)+ +(?<user>\w+) +(?<group>\w+) +(?<size>\d+) (?<lastWriteTime>[A-Z][a-z]{2} [ \d]\d +(?:\d{4}|\d{2}:\d{2})|[\d\-]+(?: \d{2}:\d{2}(?::\d{2})?)?) (?<filename>.+)';
 
   [Collections.Generic.List[PsObject]]$files = New-Object Collections.Generic.List[PsObject];
