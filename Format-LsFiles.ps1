@@ -32,7 +32,7 @@ function Format-LsFiles {
       $folderRegex = $folderPart | Select-String -pattern $folderPattern;
       
       if ($null -eq $folderRegex) {
-        $parsedFiles = (Get-LsFiles -folder '.' -content $folderPart);
+        $parsedFiles = (Get-LsFiles -folder '' -content $folderPart);
         $files.AddRange([PSObject[]]$parsedFiles);
       }
       else {
@@ -40,7 +40,7 @@ function Format-LsFiles {
           $folder = $folderMath.Groups['folder'].Value;
           $items = $folderMath.Groups['items'].Value;
 
-          $parsedFiles = (Get-LsFiles -folder $folder -content $items);
+          $parsedFiles = (Get-LsFiles -folder "$folder/" -content $items);
           $files.AddRange([PSObject[]]$parsedFiles);
         }
       }
@@ -80,7 +80,7 @@ function Get-LsFiles {
         Group = $group
         Size = $size
         LastWriteTime = $lastWriteTime
-        FileName = "$folder/$filename"
+        FileName = "$folder$filename"
       }));
     }
   }
