@@ -12,7 +12,7 @@
   # RootModule = 'Power-Multipass.psm1'
 
   # Version number of this module.
-  ModuleVersion = '0.2.2'
+  ModuleVersion = '0.2.3'
 
   # Supported PSEditions
   # CompatiblePSEditions = @()
@@ -69,7 +69,7 @@
   NestedModules = @('New-PMInstance.ps1', 'Start-PMInstance.ps1','Set-EOL.ps1', 'Update-Hosts.ps1', 'Format-LsFiles.ps1')
 
   # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-  FunctionsToExport = @('New-PMInstance', 'Start-PMInstance')
+  FunctionsToExport = @('New-PMInstance', 'Start-PMInstance', 'Format-LsFiles')
 
   # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
   CmdletsToExport = @()

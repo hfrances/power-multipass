@@ -126,7 +126,7 @@ function New-PMInstance {
           if ($NoCreate -eq $true) {
             $newFolder = $remoteFiles | Where-Object {$_.FileName -eq "pipeline/$path"};
           }
-          if ($newFolder -eq $null) {
+          if ($null -eq $newFolder) {
             Write-Host " - $path" -NoNewline;
             multipass exec $Name -- mkdir "pipeline/$path";
             Write-Host "";
@@ -135,9 +135,9 @@ function New-PMInstance {
         else {
           $newFile = $null;
           if ($NoCreate -eq $true) {
-            $newFile = $remoteFiles | Where-Object {$_.FileName -eq "pipeline/$path" -and $_.Date -gt $file.LastWriteTime};
+            $newFile = $remoteFiles | Where-Object {$_.FileName -eq "pipeline/$path" -and $_.LastWriteTime -gt $file.LastWriteTime};
           }
-          if ($newFile -eq $null) {
+          if ($null -eq $newFile) {
             Write-Host " - $path" -NoNewline;
             $isScript = ($file.Extension -eq '.sh');
             if ($isScript) {
