@@ -109,7 +109,7 @@ function New-PMInstance {
       # Get existing files in VM.
       if ($NoCreate -eq $true -and $Force -eq $false) {
         Write-Host "Retrieving files in the virtual machine...";
-        $remoteFiles = ((multipass exec CWA-LOCAL -- ls -laR --time-style='+%Y-%m-%d %H:%M:%S' pipeline) | Format-LsFiles);
+        $remoteFiles = ((multipass exec $Name -- ls -laR --time-style='+%Y-%m-%d %H:%M:%S' pipeline) | Format-LsFiles);
         Write-Host "$($remoteFiles.Count) files found.";
       }
 
