@@ -30,6 +30,9 @@ function New-PMInstance {
 
     [Parameter( Mandatory = $false )]
     [string]$Network,
+
+    [Parameter( Mandatory = $false )]
+    [string]$Image,
 	
     [Parameter( Mandatory = $false )]
     [Alias('no-create')]
@@ -49,7 +52,7 @@ function New-PMInstance {
 
   if ($PsCmdlet.ParameterSetName -eq "Help") {
     Write-Host;
-    Write-Host "New-PMInstance name [-PipelineDir <string>] [-CloudInit <string>] [-Network <string>] [-Mem <string>] [-Cpus <number>]";
+    Write-Host "New-PMInstance name [-PipelineDir <string>] [-CloudInit <string>] [-Network <string>] [-Mem <string>] [-Cpus <number>] [-Image <string>]";
     Write-Host;
     Write-Host "  -PipelineDir <string>   Path to the directory to copy to the instance after finish to start.";
     Write-Host "                          Files with extension ""*.pipeline.sh"" are executed after finish copy.";
@@ -60,6 +63,10 @@ function New-PMInstance {
     Write-Host "                          mac: hardware address (default: random).";
     Write-Host "  -Memory <string>        Amount of memory to allocate. Positive integers, in bytes, or with K, M, G suffix.";
     Write-Host "  -Cpus <number>          Number of CPUs to allocate.";
+    Write-Host "  -Image <string>         Optional image to launch. If omitted, then the default Ubuntu LTS will be used.";
+    Write-Host "                          <remote> can be either 'release' or 'daily'. If <remote> is omitted, 'release' will be used.";
+    Write-Host "                          <image> can be a partial image hash or an Ubuntu release version, codename or alias.";
+    Write-Host "                          <url> is a custom image URL that is in http://, https://, or file:// format.";
     Write-Host "  -NoCreate               Optional: do not remove an create the virtual machine.";
     Write-Host "  -SkipSh                 Optional: do not run .sh scripts.";
     Write-Host "  -NoBash                 Optional: when the process finish, it stays in powershell instead of enter in the virtual machine command line.";
@@ -80,6 +87,7 @@ function New-PMInstance {
 
       Write-Host "Launching $Name";
       $arguments = New-Object Collections.Generic.List[string];
+      $imageFormatted = "";
       if ($CloudInit -ne "") {
         $arguments.Add("--cloud-init $CloudInit");
       }
@@ -92,7 +100,10 @@ function New-PMInstance {
       if ($Network -ne "") {
         $arguments.Add("--network $Network");
       }
-      Invoke-Expression "multipass launch --name $Name $arguments";
+      if ($Image -ne "") {
+        $imageFormatted = """$Image""";
+      }
+      Invoke-Expression "multipass launch $imageFormatted --name $Name $arguments";
     }
 
     # Check that instance is ready (sometimes returns timeout).
