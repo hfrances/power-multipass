@@ -33,7 +33,9 @@ function Format-LsFiles {
       
       if ($null -eq $folderRegex) {
         $parsedFiles = (Get-LsFiles -folder '' -content $folderPart);
-        $files.AddRange([PSObject[]]$parsedFiles);
+        if ($null -ne $parsedFiles) {
+          $files.AddRange([PSObject[]]$parsedFiles);
+        }
       }
       else {
         foreach ($folderMath in $folderRegex.Matches) {
@@ -41,7 +43,9 @@ function Format-LsFiles {
           $items = $folderMath.Groups['items'].Value;
 
           $parsedFiles = (Get-LsFiles -folder "$folder/" -content $items);
-          $files.AddRange([PSObject[]]$parsedFiles);
+          if ($null -ne $parsedFiles) {
+            $files.AddRange([PSObject[]]$parsedFiles);
+          }
         }
       }
     }
@@ -57,6 +61,7 @@ function Get-LsFiles {
   $linePattern = '(?ms)(?<type>[dpsl-])(?<permissions>[rwxt-]+)\.? +(?<hardLinks>\d)+ +(?<user>\w+) +(?<group>\w+) +(?<size>\d+) (?<lastWriteTime>[A-Z][a-z]{2} [ \d]\d +(?:\d{4}|\d{2}:\d{2})|[\d\-]+(?: \d{2}:\d{2}(?::\d{2})?)?) (?<filename>.+)';
 
   [Collections.Generic.List[PsObject]]$files = New-Object Collections.Generic.List[PsObject];
+
   $regex = ($content -split "`n") | Select-String -pattern $linePattern;
   foreach ($match in $regex.Matches) {
     $type = $match.Groups['type'].Value;
