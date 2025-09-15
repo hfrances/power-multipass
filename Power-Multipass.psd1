@@ -12,7 +12,7 @@
   # RootModule = 'Power-Multipass.psm1'
 
   # Version number of this module.
-  ModuleVersion = '0.2.7-alpha'
+  ModuleVersion = '0.2.7.1'
 
   # Supported PSEditions
   # CompatiblePSEditions = @()

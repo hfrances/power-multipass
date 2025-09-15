@@ -10,6 +10,19 @@ pool:
 jobs:
   - job: Build
     steps:
+      # Normalizar finales de línea
+      - task: PowerShell@2
+        displayName: 'Normalize line endings'
+        inputs:
+          targetType: 'inline'
+          script: |
+            Get-ChildItem -Path "*.ps1", "*.psd1", "*.psm1", "*.nuspec" -Recurse | ForEach-Object {
+              $content = [System.IO.File]::ReadAllText($_.FullName)
+              $normalizedContent = $content -replace "`r`n", "`n"
+              [System.IO.File]::WriteAllText($_.FullName, $normalizedContent)
+              Write-Host "Normalized line endings in $($_.FullName)"
+            }
+
       - task: NuGetCommand@2
         displayName: 'NuGet pack'
         inputs:
