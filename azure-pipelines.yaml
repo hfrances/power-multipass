@@ -2,9 +2,10 @@ trigger:
   - master
   - main
   - staging
+  - azure-pipelines
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'ubuntu-22.04'
 
 jobs:
   - job: Build
