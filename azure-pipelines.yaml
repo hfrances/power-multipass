@@ -2,6 +2,7 @@ trigger:
   - master
   - main
   - staging
+  - azure-pipelines
 
 pool:
   vmImage: 'ubuntu-latest'
