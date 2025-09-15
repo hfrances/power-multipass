@@ -33,7 +33,8 @@ Install-Module -Name "Power-Multipass" -Repository "NuGet"
 
 - You can check for your module by running the following command:
 ```powershell
-Get-Module -ListAvailable "Power-Multipass"
+Get-Module -Name "Power-Multipass"
+Get-Command -Module "Power-Multipass"
 ```
 ## Available Scripts
 
